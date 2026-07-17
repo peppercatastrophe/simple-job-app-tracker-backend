@@ -211,6 +211,79 @@ Delete a job application.
 
 ---
 
+## Job Application Progress History (Events)
+
+Each job application has a history of progress events (e.g. Applied on July 12th, Interview on July 17th). An event is automatically recorded when an application is created, and whenever its `status` changes via `PUT /api/applications/:id` or via the events endpoint below.
+
+All require `Authorization: Bearer <token>`.
+
+### GET /api/applications/:id/events
+
+List the progress history for a job application, ordered by `event_date` ascending.
+
+**Response `200`:**
+```json
+[
+  {
+    "id": "770e8400-e29b-41d4-a716-446655440002",
+    "job_application_id": "660e8400-e29b-41d4-a716-446655440001",
+    "status": "applied",
+    "note": null,
+    "event_date": "2026-07-12T08:00:00Z",
+    "created_at": "2026-07-12T08:00:00Z"
+  },
+  {
+    "id": "880e8400-e29b-41d4-a716-446655440003",
+    "job_application_id": "660e8400-e29b-41d4-a716-446655440001",
+    "status": "interview",
+    "note": "Phone screen with recruiter",
+    "event_date": "2026-07-17T15:00:00Z",
+    "created_at": "2026-07-17T15:05:00Z"
+  }
+]
+```
+
+**Errors:** `404` (application not found or not owned by user)
+
+---
+
+### POST /api/applications/:id/events
+
+Add a progress event to a job application's history. This also updates the parent application's `status` field to match.
+
+**Request:**
+```json
+{
+  "status": "interview",
+  "note": "Onsite interview scheduled",
+  "event_date": "2026-07-17T15:00:00Z"
+}
+```
+
+| Field        | Type   | Required | Default          |
+|--------------|--------|----------|------------------|
+| `status`     | string | yes      |                  |
+| `note`       | string | no       | `null`           |
+| `event_date` | string | no       | current time     |
+
+`event_date` must be in RFC3339 format (e.g. `2026-07-17T15:00:00Z`).
+
+**Response `201`:** The created event object.
+
+**Errors:** `400` (missing status, invalid date format), `404` (application not found or not owned by user)
+
+---
+
+### DELETE /api/applications/:id/events/:eventId
+
+Remove an event from a job application's history.
+
+**Response `204`:** No content (success).
+
+**Errors:** `404` (application or event not found)
+
+---
+
 ## Status Values
 
 Suggested statuses (free-text field, no enum enforcement):

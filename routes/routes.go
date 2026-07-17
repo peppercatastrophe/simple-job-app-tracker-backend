@@ -10,6 +10,7 @@ import (
 func Setup(app *fiber.App, jwtSecret string) {
 	auth := &handlers.AuthHandler{JWTSecret: jwtSecret}
 	job := &handlers.JobApplicationHandler{}
+	event := &handlers.JobApplicationEventHandler{}
 
 	app.Post("/api/auth/register", auth.Register)
 	app.Post("/api/auth/login", auth.Login)
@@ -22,4 +23,8 @@ func Setup(app *fiber.App, jwtSecret string) {
 	api.Post("/applications", job.Create)
 	api.Put("/applications/:id", job.Update)
 	api.Delete("/applications/:id", job.Delete)
+
+	api.Get("/applications/:id/events", event.List)
+	api.Post("/applications/:id/events", event.Create)
+	api.Delete("/applications/:id/events/:eventId", event.Delete)
 }

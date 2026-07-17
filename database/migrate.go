@@ -7,6 +7,7 @@ import (
 
 func RunMigrations() error {
 	migrations := []string{
+		`CREATE EXTENSION IF NOT EXISTS pgcrypto`,
 		`CREATE TABLE IF NOT EXISTS users (
 			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 			email VARCHAR(255) UNIQUE NOT NULL,
@@ -30,6 +31,15 @@ func RunMigrations() error {
 		)`,
 		`CREATE INDEX IF NOT EXISTS idx_user_status ON job_applications (user_id, status)`,
 		`CREATE INDEX IF NOT EXISTS idx_user_apply_date ON job_applications (user_id, apply_date_time)`,
+		`CREATE TABLE IF NOT EXISTS job_application_events (
+			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+			job_application_id UUID NOT NULL REFERENCES job_applications(id) ON DELETE CASCADE,
+			status VARCHAR(50) NOT NULL,
+			note TEXT,
+			event_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		)`,
+		`CREATE INDEX IF NOT EXISTS idx_job_application_events_app ON job_application_events (job_application_id, event_date)`,
 	}
 
 	for _, m := range migrations {
